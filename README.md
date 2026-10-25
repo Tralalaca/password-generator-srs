@@ -7,7 +7,7 @@
 - [Техническое задание в GitHub Wiki](https://github.com/Tralalaca/password-generator-srs/wiki/%D0%A2%D0%B5%D1%85%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5-%D0%B7%D0%B0%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5)
 - [Issues с историями пользователя и критериями приёмки](https://github.com/Tralalaca/password-generator-srs/issues)
 - [Редактируемый текст ТЗ](docs/technical-specification.md)
-- [Подготовленные обновления Issues #8–#14](docs/issue-updates.md)
+- [Тексты Issues #8–#14](docs/issue-updates.md)
 
 ## Область требований
 
