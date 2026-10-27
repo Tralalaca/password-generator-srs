@@ -176,8 +176,10 @@ if ($Preview) {
         $savedMap = Get-Content -LiteralPath $issueMapFile -Raw -Encoding UTF8 | ConvertFrom-Json
         foreach ($property in $savedMap.PSObject.Properties) { $previewMap[$property.Name] = [int]$property.Value }
     }
+    $roadmapFile = Join-Path $repoRoot 'docs/roadmap-url.txt'
+    $previewRoadmapUrl = if (Test-Path -LiteralPath $roadmapFile) { (Get-Content -LiteralPath $roadmapFile -Raw -Encoding UTF8).Trim() } else { '' }
     $previewFile = Join-Path $repoRoot 'docs/wiki-project-plan.md'
-    [IO.File]::WriteAllText($previewFile, (Get-WikiText $previewMap ''), (New-Object Text.UTF8Encoding($false)))
+    [IO.File]::WriteAllText($previewFile, (Get-WikiText $previewMap $previewRoadmapUrl), (New-Object Text.UTF8Encoding($false)))
     $issuePreview = Join-Path $repoRoot 'docs/issues-preview.md'
     $issueText = ($plan.tasks | ForEach-Object { "# $($_.id) — $($_.title)`n`n$(Get-IssueBody $_ $previewMap)" }) -join "`n`n---`n`n"
     [IO.File]::WriteAllText($issuePreview, $issueText, (New-Object Text.UTF8Encoding($false)))
@@ -221,7 +223,7 @@ foreach ($milestone in $plan.milestones) {
     $milestoneNumbers[$milestone.id] = $number
 }
 
-$existingIssues = @(Invoke-GhJson "repos/$repository/issues?state=all&per_page=100") | Where-Object { -not $_.pull_request }
+$existingIssues = @(Invoke-GhJson "repos/$repository/issues?state=all&per_page=100") | Where-Object { -not $_.PSObject.Properties['pull_request'] }
 $issueNumbers = @{}
 foreach ($task in $plan.tasks) {
     $body = Get-IssueBody $task $issueNumbers
@@ -279,11 +281,11 @@ $query = 'query($login:String!,$number:Int!){user(login:$login){projectV2(number
 $projectData = Invoke-GhJson 'graphql' 'POST' @{ query = $query; variables = @{ login = $owner; number = $projectNumber } }
 $projectNode = $projectData.data.user.projectV2
 if (-not $projectNode) { throw 'Project node was not found through GraphQL.' }
-$roadmapView = @($projectNode.views.nodes | Where-Object { $_.name -eq 'Roadmap' -and $_.layout -eq 'ROADMAP' })
+$roadmapView = @($projectNode.views.nodes | Where-Object { $_.name -eq 'Roadmap' -and $_.layout -eq 'ROADMAP_LAYOUT' })
 if ($roadmapView.Count) { $viewNumber = [int]$roadmapView[0].number }
 else {
     $mutation = 'mutation($input:CreateProjectV2ViewInput!){createProjectV2View(input:$input){projectV2View{name number layout}}}'
-    $viewData = Invoke-GhJson 'graphql' 'POST' @{ query = $mutation; variables = @{ input = @{ projectId = $projectNode.id; name = 'Roadmap'; layout = 'ROADMAP' } } }
+    $viewData = Invoke-GhJson 'graphql' 'POST' @{ query = $mutation; variables = @{ input = @{ projectId = $projectNode.id; name = 'Roadmap'; layout = 'ROADMAP_LAYOUT' } } }
     if ($viewData.errors) { throw ($viewData.errors | ConvertTo-Json -Depth 10) }
     $viewNumber = [int]$viewData.data.createProjectV2View.projectV2View.number
 }
