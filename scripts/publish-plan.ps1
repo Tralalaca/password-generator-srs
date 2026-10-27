@@ -261,6 +261,7 @@ if ($project.Count) { $project = $project[0] }
 else { $project = Invoke-GhCommand @('project', 'create', '--owner', $owner, '--title', $plan.projectTitle, '--format', 'json') | ConvertFrom-Json }
 $projectNumber = [int]$project.number
 Invoke-GhCommand @('project', 'link', [string]$projectNumber, '--owner', $owner, '--repo', $repoName) | Out-Null
+Invoke-GhCommand @('project', 'edit', [string]$projectNumber, '--owner', $owner, '--visibility', 'PUBLIC') | Out-Null
 $fieldList = (Invoke-GhCommand @('project', 'field-list', [string]$projectNumber, '--owner', $owner, '--format', 'json') | ConvertFrom-Json).fields
 foreach ($fieldName in @('Start date', 'Target date')) {
     if (-not @($fieldList | Where-Object name -eq $fieldName).Count) {
