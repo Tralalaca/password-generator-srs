@@ -16,7 +16,7 @@
 
 План рассчитан на 28 октября — 11 декабря 2026 года. Он содержит 24 задачи, четыре контрольные точки, оценки трудозатрат, основные роли и зависимости. Один участник выполняет роли менеджера проекта, дизайнера, frontend-разработчика и QA-инженера. Backend-разработка не требуется: по ТЗ пароль создаётся в браузере и не передаётся на сервер.
 
-Файл [публикации плана](scripts/publish-plan.ps1) создаёт Issues, метки ролей и сложности, Milestones, GitHub Project с датами и представлением Roadmap, а также страницу Wiki «План проекта». Для предварительной проверки без изменений в GitHub выполните `powershell -File scripts/publish-plan.ps1 -Preview`. Для публикации нужен действующий вход `gh auth login -h github.com -s repo,project`, затем выполните `powershell -File scripts/publish-plan.ps1`.
+Файл [публикации плана](scripts/publish-plan.ps1) создаёт Issues, метки ролей и сложности, Milestones, GitHub Project с датами и представлением Roadmap, а также страницу Wiki «План проекта». Для предварительной проверки без изменений в GitHub выполните `pwsh -File scripts/publish-plan.ps1 -Preview`. Для публикации нужен действующий вход `gh auth login -h github.com -s repo,project`, затем выполните `pwsh -File scripts/publish-plan.ps1`.
 
 ## Область требований
 
