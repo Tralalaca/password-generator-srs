@@ -1,0 +1,36 @@
+name: Publish v1.0.0 release
+
+on:
+  push:
+    tags: ['v1.0.0']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate release
+        run: |
+          node --check script.js
+          node --test tests/generator.test.js
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" \
+              --title "First Release - Password Generator" \
+              --notes-file docs/release-notes-v1.0.0.md \
+              --verify-tag
+          fi
