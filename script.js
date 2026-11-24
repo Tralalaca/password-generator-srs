@@ -63,12 +63,23 @@ function generatePassword(options, cryptoSource = globalThis.crypto) {
   return characters.join("");
 }
 
+function evaluateStrength(options) {
+  const alphabetSize = getSelectedSets(options).join("").length;
+  if (alphabetSize === 0) throw new RangeError(SETS_ERROR);
+  const bits = options.length * Math.log2(alphabetSize);
+  const level = bits < 40 ? "Слабый" : bits < 60 ? "Средний" : "Надёжный";
+  return { bits, level };
+}
+
 function initializeGenerator(doc = document) {
   const form = doc.getElementById("generatorForm");
   const lengthInput = doc.getElementById("passwordLength");
   const lengthError = doc.getElementById("lengthError");
   const setsError = doc.getElementById("setsError");
   const passwordOutput = doc.getElementById("passwordOutput");
+  const copyButton = doc.getElementById("copyButton");
+  const strengthOutput = doc.getElementById("strengthOutput");
+  const recommendation = doc.getElementById("recommendation");
   const statusMessage = doc.getElementById("statusMessage");
   let currentPassword = "";
 
@@ -102,8 +113,26 @@ function initializeGenerator(doc = document) {
     try {
       currentPassword = generatePassword(options);
       passwordOutput.textContent = currentPassword;
+      copyButton.disabled = false;
+      const strength = evaluateStrength(options);
+      strengthOutput.textContent = `Оценка стойкости: ${strength.level} (${strength.bits.toFixed(1)} бит)`;
+      strengthOutput.dataset.level = strength.level === "Слабый" ? "weak" : strength.level === "Средний" ? "medium" : "strong";
+      recommendation.textContent = strength.level === "Надёжный"
+        ? ""
+        : "Увеличьте длину пароля или выберите больше типов символов.";
     } catch (error) {
       statusMessage.textContent = error.message;
+    }
+  });
+
+  copyButton.addEventListener("click", async () => {
+    if (!currentPassword) return;
+    try {
+      if (!globalThis.navigator?.clipboard?.writeText) throw new Error("Clipboard API недоступен");
+      await globalThis.navigator.clipboard.writeText(currentPassword);
+      statusMessage.textContent = "Пароль скопирован";
+    } catch {
+      statusMessage.textContent = "Не удалось скопировать пароль";
     }
   });
 
@@ -119,5 +148,6 @@ if (typeof document !== "undefined") {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { CHARACTER_SETS, parseLength, getSelectedSets, randomIndex, generatePassword, initializeGenerator };
+  module.exports = { CHARACTER_SETS, parseLength, getSelectedSets, randomIndex, generatePassword, evaluateStrength, initializeGenerator };
 }
+
