@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Генератор сложных паролей</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Генератор сложных паролей</h1>
+    <form id="generatorForm" novalidate>
+      <label for="passwordLength">Длина пароля</label>
+      <input id="passwordLength" name="length" type="number" min="6" max="128" step="1" value="16">
+      <p id="lengthError" role="alert"></p>
+
+      <fieldset>
+        <legend>Типы символов</legend>
+        <label><input id="lowercase" type="checkbox" checked> Строчные буквы (a-z)</label>
+        <label><input id="uppercase" type="checkbox" checked> Заглавные буквы (A-Z)</label>
+        <label><input id="digits" type="checkbox" checked> Цифры (0-9)</label>
+        <label><input id="symbols" type="checkbox" checked> Специальные символы</label>
+      </fieldset>
+      <p id="setsError" role="alert"></p>
+
+      <label><input id="excludeSimilar" type="checkbox"> Исключить похожие символы (O, 0, o, l, 1, I)</label>
+      <button id="generateButton" type="submit">Сгенерировать</button>
+    </form>
+
+    <section aria-labelledby="resultHeading">
+      <h2 id="resultHeading">Результат</h2>
+      <output id="passwordOutput" aria-live="polite">Пароль ещё не создан</output>
+      <button id="copyButton" type="button" disabled>Копировать</button>
+      <p id="strengthOutput" aria-live="polite"></p>
+      <p id="recommendation"></p>
+      <p id="statusMessage" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
+
