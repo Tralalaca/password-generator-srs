@@ -10,6 +10,15 @@ const SET_KEYS = Object.keys(CHARACTER_SETS);
 const SIMILAR_CHARACTERS = new Set("O0ol1I");
 const LENGTH_ERROR = "Введите целое число от 6 до 128";
 const SETS_ERROR = "Выберите хотя бы один тип символов";
+const STORAGE_KEY = "password-generator-settings-v1";
+const DEFAULT_SETTINGS = Object.freeze({
+  length: 16,
+  lowercase: true,
+  uppercase: true,
+  digits: true,
+  symbols: true,
+  excludeSimilar: false
+});
 
 function parseLength(value) {
   const text = String(value).trim();
@@ -71,7 +80,50 @@ function evaluateStrength(options) {
   return { bits, level };
 }
 
-function initializeGenerator(doc = document) {
+function normalizeSavedSettings(candidate) {
+  const settings = { ...DEFAULT_SETTINGS };
+  if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return settings;
+  if (Number.isInteger(candidate.length) && candidate.length >= 6 && candidate.length <= 128) {
+    settings.length = candidate.length;
+  }
+  for (const key of [...SET_KEYS, "excludeSimilar"]) {
+    if (typeof candidate[key] === "boolean") settings[key] = candidate[key];
+  }
+  if (!SET_KEYS.some((key) => settings[key])) {
+    for (const key of SET_KEYS) settings[key] = DEFAULT_SETTINGS[key];
+  }
+  return settings;
+}
+
+function loadSettings(storage) {
+  if (!storage || typeof storage.getItem !== "function") {
+    return { settings: { ...DEFAULT_SETTINGS }, available: false };
+  }
+  let saved;
+  try {
+    saved = storage.getItem(STORAGE_KEY);
+  } catch {
+    return { settings: { ...DEFAULT_SETTINGS }, available: false };
+  }
+  if (saved === null) return { settings: { ...DEFAULT_SETTINGS }, available: true };
+  try {
+    return { settings: normalizeSavedSettings(JSON.parse(saved)), available: true };
+  } catch {
+    return { settings: { ...DEFAULT_SETTINGS }, available: true };
+  }
+}
+
+function saveSettings(storage, settings) {
+  try {
+    if (!storage || typeof storage.setItem !== "function") return false;
+    storage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function initializeGenerator(doc = document, environment = globalThis) {
   const form = doc.getElementById("generatorForm");
   const lengthInput = doc.getElementById("passwordLength");
   const lengthError = doc.getElementById("lengthError");
@@ -81,13 +133,34 @@ function initializeGenerator(doc = document) {
   const strengthOutput = doc.getElementById("strengthOutput");
   const recommendation = doc.getElementById("recommendation");
   const statusMessage = doc.getElementById("statusMessage");
+  const settingsStatus = doc.getElementById("settingsStatus");
   let currentPassword = "";
+  let storage;
+  try { storage = environment.localStorage; } catch { storage = null; }
+  const restored = loadSettings(storage);
+  let lastValidLength = restored.settings.length;
+  lengthInput.value = String(restored.settings.length);
+  for (const key of SET_KEYS) doc.getElementById(key).checked = restored.settings[key];
+  doc.getElementById("excludeSimilar").checked = restored.settings.excludeSimilar;
+  if (!restored.available) settingsStatus.textContent = "Не удалось сохранить настройки";
 
   function readOptions() {
     const options = { length: parseLength(lengthInput.value) };
     for (const key of SET_KEYS) options[key] = doc.getElementById(key).checked;
     options.excludeSimilar = doc.getElementById("excludeSimilar").checked;
     return options;
+  }
+
+  function persistSettings() {
+    const options = readOptions();
+    if (options.length !== null) lastValidLength = options.length;
+    const settings = { ...options, length: lastValidLength };
+    settingsStatus.textContent = saveSettings(storage, settings) ? "" : "Не удалось сохранить настройки";
+  }
+
+  lengthInput.addEventListener("input", persistSettings);
+  for (const key of [...SET_KEYS, "excludeSimilar"]) {
+    doc.getElementById(key).addEventListener("change", persistSettings);
   }
 
   form.addEventListener("submit", (event) => {
@@ -111,7 +184,7 @@ function initializeGenerator(doc = document) {
     }
 
     try {
-      currentPassword = generatePassword(options);
+      currentPassword = generatePassword(options, environment.crypto);
       passwordOutput.textContent = currentPassword;
       copyButton.disabled = false;
       const strength = evaluateStrength(options);
@@ -128,8 +201,8 @@ function initializeGenerator(doc = document) {
   copyButton.addEventListener("click", async () => {
     if (!currentPassword) return;
     try {
-      if (!globalThis.navigator?.clipboard?.writeText) throw new Error("Clipboard API недоступен");
-      await globalThis.navigator.clipboard.writeText(currentPassword);
+      if (!environment.navigator?.clipboard?.writeText) throw new Error("Clipboard API недоступен");
+      await environment.navigator.clipboard.writeText(currentPassword);
       statusMessage.textContent = "Пароль скопирован";
     } catch {
       statusMessage.textContent = "Не удалось скопировать пароль";
@@ -148,6 +221,8 @@ if (typeof document !== "undefined") {
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { CHARACTER_SETS, parseLength, getSelectedSets, randomIndex, generatePassword, evaluateStrength, initializeGenerator };
+  module.exports = {
+    CHARACTER_SETS, DEFAULT_SETTINGS, STORAGE_KEY, parseLength, getSelectedSets, randomIndex,
+    generatePassword, evaluateStrength, normalizeSavedSettings, loadSettings, saveSettings, initializeGenerator
+  };
 }
-
