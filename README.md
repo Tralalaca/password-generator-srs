@@ -17,6 +17,8 @@
 - [Редактируемый текст ТЗ](docs/technical-specification.md)
 - [Тексты Issues #8–#14](docs/issue-updates.md)
 - [План проекта и диаграмма Ганта](docs/wiki-project-plan.md)
+- [Процесс разработки лабораторной работы № 3](docs/development-process.md)
+- [Страница «Процесс разработки» в Wiki](https://github.com/Tralalaca/password-generator-srs/wiki/%D0%9F%D1%80%D0%BE%D1%86%D0%B5%D1%81%D1%81-%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%BA%D0%B8)
 - [Детализированный беклог из 24 задач](docs/backlog.json)
 - [Тексты 24 Issues для проверки](docs/issues-preview.md)
 - [План проекта в Wiki](https://github.com/Tralalaca/password-generator-srs/wiki/%D0%9F%D0%BB%D0%B0%D0%BD-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0)
