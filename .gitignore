@@ -1,0 +1,14 @@
+# Local SQLite databases and journals. The repository contains only SQL sources.
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+
+# Local test and rendering artifacts.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+tmp/
+tmp_pdf_page_*.png

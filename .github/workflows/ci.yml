@@ -33,3 +33,6 @@ jobs:
       - name: Run requirement tests
         run: node --test tests/generator.test.js
 
+      - name: Validate database schema and seed data
+        run: python3 -m unittest discover -s tests -p test_database.py
+
